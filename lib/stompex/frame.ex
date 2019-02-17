@@ -1,5 +1,4 @@
 defmodule Stompex.Frame do
-
   @type t :: struct
 
   defstruct cmd: nil,

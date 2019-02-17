@@ -16,11 +16,13 @@ defmodule Stompex.Validator do
   Check to see whether ot not the supplied command is
   a valid STOMP command.
   """
-  @spec valid_command?(String.t, float) :: boolean
+  @spec valid_command?(String.t(), float) :: boolean
   def valid_command?(cmd, version \\ 1.2)
+
   def valid_command?(cmd, 1.0) do
     cmd in @valid_commands_10
   end
+
   def valid_command?(cmd, _version) do
     valid_command?(cmd, 1.0) || cmd in @valid_commands_11
   end
@@ -34,25 +36,26 @@ defmodule Stompex.Validator do
   This applies to all known special headers, such as
   `content-length` which is actually an integer.
   """
-  @spec format_header(String.t, String.t) :: map
+  @spec format_header(String.t(), String.t()) :: map
   def format_header("content-length", value) when is_binary(value) do
-    %{ "content-length" => String.to_integer(value) }
-  end
-  def format_header("version", value) do
-    %{ "value" => String.to_float(value) }
-  end
-  def format_header(key, value) do
-    %{ key => value }
+    %{"content-length" => String.to_integer(value)}
   end
 
+  def format_header("version", value) do
+    %{"value" => String.to_float(value)}
+  end
+
+  def format_header(key, value) do
+    %{key => value}
+  end
 
   def normalise_version([]), do: @default_version
   def normalise_version(versions) when is_nil(versions) or versions == "", do: @default_version
   def normalise_version(versions) when is_binary(versions), do: String.to_float(versions)
+
   def normalise_version(versions) when is_list(versions) do
     versions
-    |> Enum.map(fn(v) -> String.to_float(v) end)
-    |> Enum.max
+    |> Enum.map(fn v -> String.to_float(v) end)
+    |> Enum.max()
   end
-
 end

@@ -150,7 +150,6 @@ defmodule Stompex.FrameBuilder do
   """
   def stomp_frame, do: new_frame("STOMP")
 
-
   #
   # Create a new frame with the specified command.
   #
@@ -169,7 +168,7 @@ defmodule Stompex.FrameBuilder do
   def set_command(frame, cmd) do
     case Validator.valid_command?(cmd) do
       true ->
-        %{ frame | cmd: cmd }
+        %{frame | cmd: cmd}
 
       false ->
         Logger.warn("Ignoring `set_command/2` call. Command '#{cmd}' is invalid")
@@ -183,7 +182,7 @@ defmodule Stompex.FrameBuilder do
   value will be replaced by the new value.
   """
   def put_header(frame, key, value) do
-    %{ frame | headers: Map.merge(frame.headers, Validator.format_header(key, value)) }
+    %{frame | headers: Map.merge(frame.headers, Validator.format_header(key, value))}
   end
 
   @doc """
@@ -197,7 +196,7 @@ defmodule Stompex.FrameBuilder do
   For adding a single header, see `put_header/3`.
   """
   def put_headers(frame, headers) do
-    %{ frame | headers: Map.merge(frame.headers, headers)}
+    %{frame | headers: Map.merge(frame.headers, headers)}
   end
 
   @doc """
@@ -207,7 +206,7 @@ defmodule Stompex.FrameBuilder do
   the existing body, then use `append_body/3` instead.
   """
   def set_body(frame, body) do
-    %{ frame | body: body }
+    %{frame | body: body}
   end
 
   @doc """
@@ -221,18 +220,20 @@ defmodule Stompex.FrameBuilder do
       frame |> append_body("body", new_line: false)
   """
   def append_body(frame, body, opts \\ [new_line: true])
-  def append_body(%{ body: nil } = frame, to_append, [new_line: false]) do
+
+  def append_body(%{body: nil} = frame, to_append, new_line: false) do
     set_body(frame, to_append)
   end
+
   def append_body(frame, body, new_line: false) do
-    %{ frame | body: frame.body <> body }
+    %{frame | body: frame.body <> body}
   end
+
   def append_body(frame, body, new_line: true) do
     frame
     |> append_body(body, new_line: false)
     |> append_body(@eol, new_line: false)
   end
-
 
   @doc """
   Once the headers and body are finished, the frame must
@@ -247,7 +248,7 @@ defmodule Stompex.FrameBuilder do
   into any of the other frame builder functions, as it
   does not return a frame.
   """
-  @spec finish_frame(Stompex.Frame.t) :: charlist
+  @spec finish_frame(Stompex.Frame.t()) :: charlist
   def finish_frame(frame) do
     frame
     |> append_body(<<0>>, new_line: false)
@@ -255,7 +256,6 @@ defmodule Stompex.FrameBuilder do
     |> to_string()
     |> to_char_list()
   end
-
 
   @doc """
   Once a frame has been received, this function should
@@ -268,7 +268,7 @@ defmodule Stompex.FrameBuilder do
   but any further use may start removing characters
   that are valid in the frames body.
   """
-  @spec clean_frame(Stompex.Frame.t) :: Stompex.Frame.t
+  @spec clean_frame(Stompex.Frame.t()) :: Stompex.Frame.t()
   def clean_frame(frame) do
     cleaned_body =
       frame.body
@@ -279,5 +279,4 @@ defmodule Stompex.FrameBuilder do
     |> set_command(String.trim_trailing(frame.cmd))
     |> set_body(cleaned_body)
   end
-
 end

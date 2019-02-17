@@ -3,10 +3,10 @@ defmodule ValidatorTest do
   doctest Stompex.Validator
 
   describe "command validation" do
-
     test "returns true for all valid commands" do
       valid = ~W(CONNECT SEND SUBSCRIBE UNSUBSCRIBE BEGIN COMMIT ABORT ACK DISCONNECT STOMP NACK)
-      Enum.each(valid, fn(cmd) ->
+
+      Enum.each(valid, fn cmd ->
         assert Stompex.Validator.valid_command?(cmd) == true
       end)
     end
@@ -20,6 +20,5 @@ defmodule ValidatorTest do
       assert Stompex.Validator.valid_command?("STOMP", 1.1) == true
       assert Stompex.Validator.valid_command?("STOMP", 1.2) == true
     end
-
   end
 end

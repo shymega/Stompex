@@ -1,8 +1,6 @@
 defmodule Stompex.Receiver.Api do
-
   defmacro __using__(_opts) do
     quote do
-
       alias Stompex.Receiver.State
 
       def start_link(conn) do
@@ -10,7 +8,7 @@ defmodule Stompex.Receiver.Api do
       end
 
       def init([conn, caller]) do
-        { :ok, %State{ caller: caller, conn: conn } }
+        {:ok, %State{caller: caller, conn: conn}}
       end
 
       def next_frame(receiver) do
@@ -31,10 +29,8 @@ defmodule Stompex.Receiver.Api do
       """
       @spec set_version(pid, float) :: :ok
       def set_version(receiver, version) do
-        GenServer.cast(receiver, { :set_version, version })
+        GenServer.cast(receiver, {:set_version, version})
       end
-
     end
   end
-
 end

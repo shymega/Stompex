@@ -1,5 +1,4 @@
 defmodule StompexTest.Messages do
-
   def full_valid_message() do
     """
     MESSAGE
@@ -26,8 +25,6 @@ defmodule StompexTest.Messages do
       last_header: "header-3"
     }
   end
-
-
 
   def full_valid_content_length_message() do
     """
@@ -64,10 +61,6 @@ defmodule StompexTest.Messages do
     }
   end
 
-
-
-
-
   def partial_message do
     """
     MESSAGE
@@ -78,7 +71,6 @@ defmodule StompexTest.Messages do
     body text
     """
   end
-
 
   def partial_frame do
     %Stompex.Frame{
@@ -97,12 +89,6 @@ defmodule StompexTest.Messages do
       last_header: "header-3"
     }
   end
-
-
-
-
-
-
 
   def multi_full_message do
     """
@@ -158,11 +144,6 @@ defmodule StompexTest.Messages do
     ]
   end
 
-
-
-
-
-
   def multi_mixed_message() do
     """
     MESSAGE
@@ -204,9 +185,6 @@ defmodule StompexTest.Messages do
       }
     ]
   end
-
-
-
 
   def incomplete_message_1() do
     """
@@ -257,8 +235,6 @@ defmodule StompexTest.Messages do
       last_header: "header-3"
     }
   end
-
-
 
   def heartbeat_frame() do
     %Stompex.Frame{

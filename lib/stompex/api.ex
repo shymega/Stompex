@@ -3,18 +3,22 @@ defmodule Stompex.Api do
 
   defmacro __using__(_opts) do
     quote do
-
       @connection_timeout 10_000
       @default_stomp_port 61618
 
       @doc false
       def start_link(host, port, login, passcode, headers, timeout \\ @connection_timeout) do
-        Connection.start_link(__MODULE__, { host, port, login, passcode, headers, timeout, self() })
+        Connection.start_link(__MODULE__, {host, port, login, passcode, headers, timeout, self()})
       end
 
       @doc false
-      def init({ host, port, login, passcode, headers, timeout, calling_process }) do
-        headers = Map.merge(%{ "accept-version" => "1.2", "login" => login, "passcode" => passcode }, headers)
+      def init({host, port, login, passcode, headers, timeout, calling_process}) do
+        headers =
+          Map.merge(
+            %{"accept-version" => "1.2", "login" => login, "passcode" => passcode},
+            headers
+          )
+
         state = %{
           sock: nil,
           host: host,
@@ -30,9 +34,8 @@ defmodule Stompex.Api do
           version: Stompex.Validator.normalise_version(headers["accept-version"])
         }
 
-        { :connect, :init, state }
+        {:connect, :init, state}
       end
-
 
       @doc """
       Connects to a remote STOMP server using the application
@@ -52,14 +55,14 @@ defmodule Stompex.Api do
             passcode: "passcode"
 
       """
-      @spec connect() :: GenServer.on_start
+      @spec connect() :: GenServer.on_start()
       def connect do
-        env       = Application.get_all_env(:stompex)
-        host      = env[:host]
-        port      = env[:port] || @default_stomp_port
-        login     = env[:login] || ""
-        passcode  = env[:passcode] || ""
-        headers   = env[:headers] || %{}
+        env = Application.get_all_env(:stompex)
+        host = env[:host]
+        port = env[:port] || @default_stomp_port
+        login = env[:login] || ""
+        passcode = env[:passcode] || ""
+        headers = env[:headers] || %{}
 
         Stompex.start_link(host, port, login, passcode, headers)
       end
@@ -78,7 +81,7 @@ defmodule Stompex.Api do
       used instead.
 
       """
-      @spec connect(String.t, integer, String.t, String.t) :: GenServer.on_start
+      @spec connect(String.t(), integer, String.t(), String.t()) :: GenServer.on_start()
       def connect(host, port, login, passcode) do
         Stompex.start_link(host, port, login, passcode, %{})
       end
@@ -99,11 +102,10 @@ defmodule Stompex.Api do
       it will be set to `1.2` by default.
 
       """
-      @spec connect(String.t, integer, String.t, String.t, map) :: GenServer.on_start
+      @spec connect(String.t(), integer, String.t(), String.t(), map) :: GenServer.on_start()
       def connect(host, port, login, passcode, headers) do
         Stompex.start_link(host, port, login, passcode, headers)
       end
-
 
       @doc """
       Disconnect from the remote stomp server. This will
@@ -158,15 +160,18 @@ defmodule Stompex.Api do
       def subscribe(conn, destination) do
         subscribe(conn, destination, [])
       end
+
       def subscribe(conn, destination, headers_or_opts) when is_list(headers_or_opts) do
-        subscribe(conn, destination, %{ "ack" => "auto" }, headers_or_opts)
+        subscribe(conn, destination, %{"ack" => "auto"}, headers_or_opts)
       end
+
       def subscribe(conn, destination, headers_or_opts) when is_map(headers_or_opts) do
         subscribe(conn, destination, headers_or_opts, [])
       end
-      @spec subscribe(pid, String.t, map, keyword) :: term
+
+      @spec subscribe(pid, String.t(), map, keyword) :: term
       def subscribe(conn, destination, headers, opts) do
-        GenServer.call(conn, { :subscribe, destination, headers, opts }, 10_000)
+        GenServer.call(conn, {:subscribe, destination, headers, opts}, 10_000)
       end
 
       @doc """
@@ -174,9 +179,9 @@ defmodule Stompex.Api do
       returned if an attempt is made to unsubscribe from a destination
       that was not subscribed in the first place.
       """
-      @spec unsubscribe(pid, String.t) :: term
+      @spec unsubscribe(pid, String.t()) :: term
       def unsubscribe(conn, destination) do
-        GenServer.call(conn, { :unsubscribe, destination })
+        GenServer.call(conn, {:unsubscribe, destination})
       end
 
       @doc """
@@ -210,9 +215,9 @@ defmodule Stompex.Api do
           Stompex.register_callback(conn, "/queue/my-queue", &IO.inspect/1)
 
       """
-      @spec register_callback(pid, String.t, ((Stompex.Frame.t) -> any)) :: term
+      @spec register_callback(pid, String.t(), (Stompex.Frame.t() -> any)) :: term
       def register_callback(conn, destination, callback) do
-        GenServer.call(conn, { :register_callback, destination, callback })
+        GenServer.call(conn, {:register_callback, destination, callback})
       end
 
       @doc """
@@ -220,9 +225,9 @@ defmodule Stompex.Api do
       function supplied must be the same function supplied when it
       was registered, otherwise it will not be removed.
       """
-      @spec register_callback(pid, String.t, ((Stompex.Frame.t) -> any)) :: term
+      @spec register_callback(pid, String.t(), (Stompex.Frame.t() -> any)) :: term
       def remove_callback(conn, destination, callback) do
-        GenServer.call(conn, { :remove_callback, destination, callback })
+        GenServer.call(conn, {:remove_callback, destination, callback})
       end
 
       @doc """
@@ -275,9 +280,8 @@ defmodule Stompex.Api do
       """
       @spec send_to_caller(pid, boolean) :: :ok
       def send_to_caller(conn, send) do
-        GenServer.cast(conn, { :send_to_caller, send })
+        GenServer.cast(conn, {:send_to_caller, send})
       end
-
 
       @doc """
       Send an acknowledgement of a message back to the server.
@@ -304,9 +308,9 @@ defmodule Stompex.Api do
       this function will return immediately with `:ok`.
 
       """
-      @spec ack(pid, Stompex.Frame.t) :: :ok
+      @spec ack(pid, Stompex.Frame.t()) :: :ok
       def ack(conn, frame) do
-        GenServer.cast(conn, { :acknowledge, frame })
+        GenServer.cast(conn, {:acknowledge, frame})
       end
 
       @doc """
@@ -316,11 +320,10 @@ defmodule Stompex.Api do
       that server, but this function will allow you to send this
       message.
       """
-      @spec nack(pid, Stompex.Frame.t) :: :ok
+      @spec nack(pid, Stompex.Frame.t()) :: :ok
       def nack(conn, frame) do
-        GenServer.cast(conn, { :nack, frame })
+        GenServer.cast(conn, {:nack, frame})
       end
-
 
       @doc """
       Send a message to the specified destination. This function
@@ -331,12 +334,10 @@ defmodule Stompex.Api do
       registered callback for the given destination, or the calling
       process depending on configuration
       """
-      @spec send(pid, String.t, String.t) :: :ok | { :error, :gen_tcp.reason }
+      @spec send(pid, String.t(), String.t()) :: :ok | {:error, :gen_tcp.reason()}
       def send(conn, destination, message) do
-        GenServer.call(conn, { :send, destination, message })
+        GenServer.call(conn, {:send, destination, message})
       end
-
     end
   end
-
 end

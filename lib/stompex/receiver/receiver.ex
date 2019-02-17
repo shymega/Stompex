@@ -8,25 +8,24 @@ defmodule Stompex.Receiver do
   @header_regex ~r/^([a-zA-Z0-9\-_]*):(.*)$/
 
   @doc false
-  def handle_cast(:next_frame, %{ conn: conn } = state) do
+  def handle_cast(:next_frame, %{conn: conn} = state) do
     conn
     |> do_receive
     |> return_to_caller(state)
 
-    { :noreply, state }
+    {:noreply, state}
   end
 
   @doc false
-  def handle_cast({ :set_version, version }, state) do
-    { :noreply, %{ state | version: version } }
+  def handle_cast({:set_version, version}, state) do
+    {:noreply, %{state | version: version}}
   end
 
   @doc false
-  def handle_call(:receive_frame, _from, %{ conn: conn } = state) do
+  def handle_call(:receive_frame, _from, %{conn: conn} = state) do
     frame = do_receive(conn)
-    { :reply, { :ok, frame }, state }
+    {:reply, {:ok, frame}, state}
   end
-
 
   defp do_receive(conn) do
     new_frame()
@@ -37,7 +36,7 @@ defmodule Stompex.Receiver do
   end
 
   defp read_command(frame, conn) do
-    { :ok, command } =
+    {:ok, command} =
       conn
       |> Con.fast_forward("\n")
 
@@ -49,7 +48,7 @@ defmodule Stompex.Receiver do
   defp read_headers(frame, _conn, "\n"), do: frame
 
   defp read_headers(frame, conn, _last_line) do
-    { :ok, line } =
+    {:ok, line} =
       conn
       |> Con.read_line("\n")
 
@@ -57,11 +56,11 @@ defmodule Stompex.Receiver do
   end
 
   defp process_header("\n", frame), do: frame
+
   defp process_header(line, frame) do
-    [ _, key, value ] = Regex.run(@header_regex, line)
+    [_, key, value] = Regex.run(@header_regex, line)
     frame |> put_header(key, value)
   end
-
 
   #
   # Reads the body of the frame based on a pre-determined
@@ -71,8 +70,9 @@ defmodule Stompex.Receiver do
   # to cater for the required null character following
   # the body to mark the end of the frame.
   #
-  defp read_body(%{ headers: %{ "content-length" => length } } = frame, conn) when not is_nil(length) and length != "" do
-    { :ok, body } =
+  defp read_body(%{headers: %{"content-length" => length}} = frame, conn)
+       when not is_nil(length) and length != "" do
+    {:ok, body} =
       conn
       |> Con.read_bytes(length + 1)
 
@@ -84,7 +84,7 @@ defmodule Stompex.Receiver do
   # pre-determined content length.
   #
   defp read_body(frame, conn) do
-    { :ok, body } =
+    {:ok, body} =
       conn
       |> Con.read_line(<<0>>)
 
@@ -103,8 +103,7 @@ defmodule Stompex.Receiver do
     end
   end
 
-  defp return_to_caller(frame, %{ caller: caller }) do
-    send(caller, { :receiver, frame })
+  defp return_to_caller(frame, %{caller: caller}) do
+    send(caller, {:receiver, frame})
   end
-
 end
